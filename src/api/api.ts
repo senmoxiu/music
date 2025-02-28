@@ -1,4 +1,4 @@
-import {post, get} from "./http.ts";
+import {get, post} from "./http.ts";
 
 //登录接口
 export function login(data: any) {
@@ -8,7 +8,7 @@ export function login(data: any) {
 //退出接口
 export function logout(data: any) {
     return post(`/api/logout`, data)
-    }
+}
 
 //注册接口
 export function register(data: any) {
@@ -23,4 +23,9 @@ export function getUserId(data: any) {
 //获取用户信息接口
 export function getUserInfo(id: number) {
     return get(`/consumer/consumer/${id}`, {id})
+}
+
+//按播放量查询所有歌曲
+export function getAllSong() {
+    return get(`/song/getPlayCount`, {})
 }

@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 
 </script>
 
@@ -19,6 +19,7 @@
       <el-main class="p-0">  <!-- 移除默认 padding -->
         <router-view/>
       </el-main>
+
     </el-container>
 
     <el-footer class="border-t border-gray-200 h-[50px]">  <!-- 固定高度 -->
@@ -33,10 +34,9 @@
 :deep(.aplayer) {
   height: 50px !important;
 }
+
 :deep(.aplayer-pic) {
   width: 50px !important;
   height: 50px !important;
 }
-
-
 </style>

@@ -5,45 +5,39 @@ const request = axios.create({
     timeout: 80000, // 请求超时时间(毫秒)
     withCredentials: true,// 异步请求携带cookie
     headers: {
-    // 设置后端需要的传参类型
-    // 'Content-Type': 'application/json',
-    // 'token': x-auth-token',//一开始就要token
-    // 'X-Requested-With': 'XMLHttpRequest',
+        // 设置后端需要的传参类型
+        // 'Content-Type': 'application/json',
+        // 'token': x-auth-token',//一开始就要token
+        // 'X-Requested-With': 'XMLHttpRequest',
     },
 })
 
 // request拦截器
-request.interceptors.request.use(
-    config => {
-        // 自动处理 FormData 的 Content-Type
-        if (config.data instanceof FormData) {
-            config.headers['Content-Type'] = 'multipart/form-data'
-        } else if (!config.headers['Content-Type']) {
-            config.headers['Content-Type'] = 'application/json'
-        }
-        // 如果你要去localStor获取token,(如果你有)
-        // let token = localStorage.getItem("x-auth-token");
-        // if (token) {
-        //添加请求头
-        //config.headers["Authorization"]="Bearer "+ token
-        // }
-        return config
-    },
-    error => {
-        // 对请求错误做些什么
-        Promise.reject(error)
+request.interceptors.request.use(config => {
+    // 自动处理 FormData 的 Content-Type
+    if (config.data instanceof FormData) {
+        config.headers['Content-Type'] = 'multipart/form-data'
+    } else if (!config.headers['Content-Type']) {
+        config.headers['Content-Type'] = 'application/json'
     }
-)
+    // 如果你要去localStor获取token,(如果你有)
+    // let token = localStorage.getItem("x-auth-token");
+    // if (token) {
+    //添加请求头
+    //config.headers["Authorization"]="Bearer "+ token
+    // }
+    return config
+}, error => {
+    // 对请求错误做些什么
+    Promise.reject(error)
+})
 
 // response 拦截器
-request.interceptors.response.use(
-    response => {
-        // 对响应数据做点什么
-        return response.data
-    },
-    error => {
-        // 对响应错误做点什么
-        return Promise.reject(error)
-    }
-)
+request.interceptors.response.use(response => {
+    // 对响应数据做点什么
+    return response.data
+}, error => {
+    // 对响应错误做点什么
+    return Promise.reject(error)
+})
 export default request
