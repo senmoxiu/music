@@ -9,11 +9,7 @@ const router = createRouter({
     }, {
         path: '/hotPlaylists', name: 'hotPlaylists', component: () => import('@/views/HotPlaylists.vue'),
     }, {
-        path: '/songCollection/:id', name: 'songCollection', component: () => import('@/views/SongCollection.vue'),
-    }, {
-        path: '/playlistCollection/:id',
-        name: 'playlistCollection',
-        component: () => import('@/views/PlaylistCollection.vue'),
+        path: '/uploadMusic', name: 'uploadMusic', component: () => import('@/views/upload/UploadMusic.vue')
     }
 
     ]

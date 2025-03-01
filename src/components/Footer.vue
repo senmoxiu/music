@@ -3,7 +3,7 @@
 import APlayer from "@worstone/vue-aplayer";
 import {ArrowLeft, ArrowRight, ArrowUpBold, VideoPause, VideoPlay} from "@element-plus/icons-vue";
 import {useSongListStore} from "@/stores/modules/useSongListStore.ts";
-import Lyric from 'lyric-parser';
+import Lyric from 'lyric-resolver';
 import {ElMessage} from "element-plus";
 
 const songListData = useSongListStore()
@@ -138,10 +138,13 @@ const loadLyric = async () => {
     const lrcText = await response.text();
 
     // 解析歌词
-    lyricInstance.value = new Lyric(lrcText, ({lineNum}) => {
-      currentLineNum.value = lineNum;
+    lyricInstance.value = new Lyric(lrcText, ({curLineNum}) => {
+      currentLineNum.value = curLineNum;
     });
-
+    console.log('当前歌词URL:', lrcUrl);
+    console.log('歌词解析结果:', lyricInstance.value);
+    console.log('歌词响应状态:', response.status);
+    console.log('原始歌词长度:', lrcText.length);
     // 同步播放器进度
     if (aplayer.value?.audioRef) {
       const currentTime = aplayer.value.audioRef.currentTime;
@@ -151,7 +154,7 @@ const loadLyric = async () => {
       if (aplayer.value.audioRef.paused) {
         lyricInstance.value.stop();
       } else {
-        lyricInstance.value.play(currentTime);
+        lyricInstance.value.play();
       }
     }
   } catch (error) {
@@ -170,7 +173,7 @@ onBeforeUnmount(() => {
 
 const handlePlay = () => {
   x.value = false;
-  lyricInstance.value?.play(aplayer.value?.audioRef.currentTime);
+  lyricInstance.value?.play();
 }
 
 const handlePause = () => {

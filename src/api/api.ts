@@ -29,3 +29,8 @@ export function getUserInfo(id: number) {
 export function getAllSong() {
     return get(`/song/getPlayCount`, {})
 }
+
+//添加歌曲接口
+export function addSong(data: any) {
+    return post(`/song/add`, data)
+}

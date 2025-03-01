@@ -59,8 +59,8 @@ const userStore = useUserStore()
               </el-icon>
               <span class="ms-2">我的</span>
             </template>
-            <el-menu-item>我收藏的歌曲</el-menu-item>
-            <el-menu-item>最近播放</el-menu-item>
+            <el-menu-item index="/mySongCollection">我收藏的歌曲</el-menu-item>
+            <el-menu-item index="/recentPlay">最近播放</el-menu-item>
             <el-menu-item-group>
               <template #title>
                 <span class="ms-2">我的歌单</span>

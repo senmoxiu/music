@@ -186,7 +186,7 @@ const submitForm = async () => {
     // 优化错误处理
     if (error?.response?.data) {
       const {code, msg} = error.response.data
-      if (code === 401) {
+      if (code === 100401) {
         ElMessage.error('认证失败，请重新登录')
       } else {
         ElMessage.error(msg || `请求错误 (${code})`)
