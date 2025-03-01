@@ -2,42 +2,34 @@ import type {UserState} from "../interface.ts";
 
 export const useUserStore = defineStore('user', () => {
 
-  const user = ref(
-    <UserState>{
-      userInfo: {},
-      loginStatus: false
+    const user = ref(<UserState>{
+        userInfo: {}, loginStatus: false
+    })
+
+    function resetUser() {
+        user.value = {
+            userInfo: {
+                id: 0,
+                username: '',
+                password: '',
+                sex: 0,
+                phone: '',
+                email: '',
+                introduction: '',
+                location: '',
+                avatar: '',
+                createTime: '',
+                status: 0
+            }, loginStatus: false
+        }
     }
 
-    )
-
-  function resetUser() {
-    user.value = {
-      userInfo: {
-        id: 0,
-        username: '',
-        password: '',
-        sex: 0,
-        phone: '',
-        email: '',
-        introduction: '',
-        location: '',
-        avatar: '',
-        createTime: '',
-        status: 0
-      },
-      loginStatus: false
+    return {
+        user, resetUser
     }
-  }
-
-  return {
-    user,
-    resetUser
-  }
 
 }, {
-persist: {
-  key: 'user-store',
-  storage: localStorage,
-}
-}
-)
+    persist: {
+        key: 'user-store', storage: localStorage,
+    }
+})

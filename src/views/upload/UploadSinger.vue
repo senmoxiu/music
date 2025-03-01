@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
+  <div class="max-w-md mx-auto p-6 bg-gray-50 p-8 rounded-lg shadow-md">
     <h2 class="text-xl font-semibold mb-6">添加歌手</h2>
     <el-form
         :model="formData"
@@ -25,13 +25,23 @@
         </el-radio-group>
       </el-form-item>
 
-      <!-- 头像URL -->
-      <el-form-item label="头像URL" prop="pic">
-        <el-input
-            v-model="formData.pic"
-            placeholder="请输入头像URL"
-            class="w-full"
-        />
+      <!-- 头像上传 -->
+      <el-form-item label="歌手头像" prop="imageFile">
+        <el-upload
+            v-model:file-list="avatarFiles"
+            :auto-upload="false"
+            :limit="1"
+            :on-change="handleAvatarChange"
+            accept="image/*"
+            list-type="picture-card"
+        >
+          <el-icon>
+            <Plus />
+          </el-icon>
+          <template #file="{ file }">
+            <img :src="file.url" class="w-full h-full object-cover">
+          </template>
+        </el-upload>
       </el-form-item>
 
       <!-- 简介 -->
@@ -61,20 +71,19 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
-import { ElMessage, ElForm } from 'element-plus'
+import { ElMessage } from 'element-plus'
+import { Plus } from '@element-plus/icons-vue'
+import { addSinger } from '@/api/api'
 
-// 表单引用
 const formRef = ref(null)
+const avatarFiles = ref([])
 
-// 表单数据
 const formData = reactive({
   name: '',
   sex: null,
-  pic: '',
   introduction: ''
 })
 
-// 验证规则
 const rules = reactive({
   name: [
     { required: true, message: '请输入歌手姓名', trigger: 'blur' },
@@ -82,48 +91,43 @@ const rules = reactive({
   ],
   sex: [
     { required: true, message: '请选择性别', trigger: 'change' }
-  ],
-  pic: [
-    { type: 'url', message: '请输入有效的URL地址', trigger: 'blur' }
   ]
 })
 
-// 提交表单
+const handleAvatarChange = (file) => {
+  if (file.raw?.type.startsWith('image/')) {
+    file.url = URL.createObjectURL(file.raw)
+  }
+}
+
 const submitForm = async () => {
   try {
-    // 验证表单
     await formRef.value.validate()
-    // 构造请求数据（过滤空字段）
-    const payload = Object.fromEntries(
-        Object.entries(formData).filter(([_, v]) => v !== '')
-    )
-    // 这里替换为实际的API调用
-    const response = await fetch('/singer/add', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload)
-    })
 
-    const result = await response.json()
+    const form = new FormData()
+    form.append('name', formData.name)
+    form.append('sex', formData.sex)
+    form.append('introduction', formData.introduction)
 
-    if (result.code === 0) {
+    if (avatarFiles.value[0]?.raw) {
+      form.append('imageFile', avatarFiles.value[0].raw)
+    }
+
+    const response = await addSinger(form) // 使用封装好的API方法
+
+    if (response.code === 100200) {
       ElMessage.success('添加成功')
       formRef.value.resetFields()
-    } else {
-      ElMessage.error(result.msg || '添加失败')
+      avatarFiles.value = []
     }
   } catch (error) {
-    ElMessage.error('提交失败，请检查表单')
+    ElMessage.error('提交失败: ' + error.message)
     console.error('提交错误:', error)
   }
 }
 </script>
 
+
 <style scoped>
-/* 可以添加自定义样式 */
-:deep(.el-form-item__label) {
-  @apply font-medium text-gray-700;
-}
+
 </style>

@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import {useUserStore} from '@/stores/modules/useUserStore'
 import {Menu as IconMenu, Upload, User} from "@element-plus/icons-vue";
+import router from "@/router";
 
 const userStore = useUserStore()
 
@@ -9,9 +10,8 @@ const userStore = useUserStore()
 <template class="w-full h-full flex flex-col">
   <div class="h-full flex flex-col">
     <div class="flex justify-center py-4">
-
-
       <div
+          @click="router.push('/myInformation')"
           class="w-32 h-32 rounded-full border-2 border-gray-300 hover:border-blue-500 transition-colors flex items-center justify-center overflow-hidden">
         <img v-if="userStore.user.userInfo.avatar" :src="userStore.user.userInfo.avatar"
              class="w-full h-full object-cover">
@@ -65,8 +65,17 @@ const userStore = useUserStore()
               <template #title>
                 <span class="ms-2">我的歌单</span>
               </template>
-              <el-menu-item index="/myPlaylist">我创建的歌单</el-menu-item>
-              <el-menu-item index="/myCollect">我收藏的歌单</el-menu-item>
+              <el-sub-menu index="2-1">
+                <template #title>
+                  <span class="ms-2">我创建的歌单</span>
+                </template>
+<!--                <el-menu-item v-for="" index="/mySongList"></el-menu-item>-->
+              </el-sub-menu>
+              <el-sub-menu index="2-2">
+                <template #title>
+                  <span class="ms-2">我收藏的歌单</span>
+                </template>
+              </el-sub-menu>
             </el-menu-item-group>
           </el-sub-menu>
         </el-menu>

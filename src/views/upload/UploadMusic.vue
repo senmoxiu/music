@@ -1,11 +1,15 @@
+<!-- 多步骤表单组件 -->
 <template>
+  <!-- 步骤指示器 -->
   <div class="h-full bg-gray-50 p-8">
+    <!-- 步骤进度条 -->
     <el-steps :active="activeStep" class="max-w-3xl mx-auto mb-8" finish-status="success">
       <el-step title="基本信息"/>
       <el-step title="文件上传"/>
       <el-step title="确认提交"/>
     </el-steps>
 
+    <!-- 主表单容器 -->
     <el-form
         ref="formRef"
         :model="form"
@@ -13,12 +17,14 @@
         class="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-sm"
         label-width="120px"
     >
-      <!-- 步骤1：基本信息 -->
+      <!-- 步骤1：歌曲元数据输入 -->
       <div v-show="activeStep === 0">
+        <!-- 歌曲名称输入 -->
         <el-form-item label="歌名" prop="name">
           <el-input v-model="form.name" placeholder="请输入歌曲名称"/>
         </el-form-item>
 
+        <!-- 歌手信息双字段布局：ID与名称组合输入 -->
         <el-form-item label="歌手信息" required>
           <div class="flex gap-4">
             <el-form-item class="flex-1" prop="singerId">
@@ -34,6 +40,7 @@
           </div>
         </el-form-item>
 
+        <!-- 多选风格选择器 -->
         <el-form-item label="歌曲风格" prop="style">
           <el-select v-model="form.style" multiple placeholder="选择风格">
             <el-option
@@ -45,6 +52,7 @@
           </el-select>
         </el-form-item>
 
+        <!-- 歌曲简介多行输入 -->
         <el-form-item label="歌曲简介" prop="introduction">
           <el-input
               v-model="form.introduction"
@@ -55,8 +63,9 @@
         </el-form-item>
       </div>
 
-      <!-- 步骤2：文件上传 -->
+      <!-- 步骤2：多媒体文件上传 -->
       <div v-show="activeStep === 1">
+        <!-- 封面图片上传组件 -->
         <el-form-item label="歌曲封面" prop="coverFile">
           <el-upload
               v-model:file-list="coverFiles"
@@ -76,6 +85,7 @@
           <div class="text-gray-500 text-xs mt-2">建议尺寸：800x800px，支持JPG/PNG格式</div>
         </el-form-item>
 
+        <!-- 音乐文件上传组件 -->
         <el-form-item label="音乐文件" prop="musicFile">
           <el-upload
               v-model:file-list="musicFiles"
@@ -96,6 +106,7 @@
           </el-upload>
         </el-form-item>
 
+        <!-- 歌词文件上传组件：支持特定格式 -->
         <el-form-item label="歌词文件" prop="lyricFile">
           <el-upload
               v-model:file-list="lyricFiles"
@@ -110,6 +121,7 @@
 
       <!-- 步骤3：确认提交 -->
       <div v-show="activeStep === 2" class="confirm-panel">
+        <!-- 信息汇总展示：表格化显示所有提交内容 -->
         <el-descriptions :column="1" border>
           <el-descriptions-item label="歌曲名称">{{ form.name }}</el-descriptions-item>
           <el-descriptions-item label="歌手信息">{{ form.singerName }} (ID: {{ form.singerId }})</el-descriptions-item>
@@ -119,7 +131,7 @@
         </el-descriptions>
       </div>
 
-      <!-- 表单操作 -->
+      <!-- 表单操作按钮组：导航和提交控制 -->
       <div class="flex justify-between mt-8">
         <el-button :disabled="activeStep === 0" @click="activeStep--">
           上一步
@@ -151,6 +163,14 @@ import {Plus} from '@element-plus/icons-vue'
 import type {UploadFile} from 'element-plus'
 import {addSong} from '@/api/api'
 
+/**
+ * 歌曲表单数据结构
+ * @property {string} name - 歌曲名称
+ * @property {number|null} singerId - 歌手ID
+ * @property {string} singerName - 歌手姓名
+ * @property {string[]} style - 音乐风格数组
+ * @property {string} introduction - 歌曲简介
+ */
 interface SongForm {
   name: string
   singerId: number | null
@@ -159,15 +179,18 @@ interface SongForm {
   introduction: string
 }
 
-const activeStep = ref(0)
-const submitting = ref(false)
-const previewUrl = ref<string>('')
+// 响应式状态管理
+const activeStep = ref(0) // 当前步骤索引
+const submitting = ref(false) // 提交状态标记
+const previewUrl = ref<string>('') // 音频预览URL
 
-const formRef = ref()
-const coverFiles = ref<UploadFile[]>([])
-const musicFiles = ref<UploadFile[]>([])
-const lyricFiles = ref<UploadFile[]>([])
+// 表单引用和文件列表
+const formRef = ref() // 表单实例引用
+const coverFiles = ref<UploadFile[]>([]) // 封面文件列表
+const musicFiles = ref<UploadFile[]>([]) // 音乐文件列表
+const lyricFiles = ref<UploadFile[]>([]) // 歌词文件列表
 
+// 响应式表单对象
 const form = reactive<SongForm>({
   name: '',
   singerId: null,
@@ -259,7 +282,7 @@ const submitForm = async () => {
       if (Array.isArray(value)) {
         formData.append(key, value.join(','))
       } else if (value !== null) {
-        formData.append(key, value.toString())
+        formData.append(key, String(value))
       }
     })
 
@@ -271,7 +294,7 @@ const submitForm = async () => {
       return
     }
 
-    formData.append('musicFile', musicFiles.value[0].raw)
+    formData.append('musicFile', musicFiles.value[0].raw || '')
 
     if (lyricFiles.value[0]?.raw) {
       formData.append('lyricFile', lyricFiles.value[0].raw)
@@ -289,7 +312,7 @@ const submitForm = async () => {
         )
     resetForm()
   } catch (error) {
-    ElMessage.error('上传失败: ' + error.message)
+    ElMessage.error('上传失败: ' + error?.message)
   } finally {
     submitting.value = false
   }

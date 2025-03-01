@@ -5,40 +5,65 @@ import {ArrowLeft, ArrowRight, ArrowUpBold, VideoPause, VideoPlay} from "@elemen
 import {useSongListStore} from "@/stores/modules/useSongListStore.ts";
 import Lyric from 'lyric-resolver';
 import {ElMessage} from "element-plus";
+import {useUserStore} from "@/stores/modules/useUserStore.ts";
+import {addPlayCount, addRecentSong, getCountSong} from "@/api/api.ts";
 
+// 查询用户登录状态
+const userStore = useUserStore()
+// 歌曲列表状态管理
 const songListData = useSongListStore()
+
+/**
+ * 播放器实例引用，包含播放器控制方法和音频元素引用
+ */
 const aplayer = ref<{
   skipBack: () => void;
   skipForward: () => void;
   toggle: () => void;
   seek: (time: number) => void;
   audioRef: HTMLAudioElement;
+  clearList: () => void;
+  switchList: (theme: string) => void;
+  addList: (list: any) => void;
 } | null>(null)
 
+/**
+ * 计算属性：格式化后的播放列表数据
+ */
 const audioList = computed(() => songListData.playerFormatList)
 
+/**
+ * 计算属性：播放列表最大索引值
+ */
 const maxIndex = computed(() => audioList.value.length - 1)
 
-
+// 当前播放曲目索引
 const num = ref(0);
 
-// 使用计算属性保持状态同步
+/**
+ * 计算当前歌曲标题，处理空值情况
+ */
 const currentSongTitle = computed(() => {
-  // 添加安全访问
   return audioList.value[num.value]?.title || '';
 });
 
+// 播放状态标志
 const x = ref(true)
+
+/**
+ * 计算当前歌曲作者，处理空值情况
+ */
 const currentSongAuthor = computed(() => {
-  // 添加安全访问
   return audioList.value[num.value]?.author || '';
 });
 
 
+/**
+ * 切换到上一首歌曲
+ * 实现循环播放逻辑，处理索引边界情况
+ */
 const previous = () => {
-  // 带边界检查的索引更新
   num.value = num.value <= 0 ? maxIndex.value : num.value - 1;
-  // 原子化操作：先更新状态再执行播放器操作
   if (aplayer.value) {
     aplayer.value.skipBack();
   } else {
@@ -46,8 +71,10 @@ const previous = () => {
   }
 };
 
+/**
+ * 切换播放/暂停状态
+ */
 const togglePlay = () => {
-  // 添加空值保护
   if (aplayer.value) {
     aplayer.value.toggle();
   } else {
@@ -55,39 +82,78 @@ const togglePlay = () => {
   }
 };
 
+/**
+ * 切换到下一首歌曲
+ * 实现循环播放逻辑，处理索引边界情况
+ * 强制重新加载音频源确保播放列表更新
+ */
 const next = () => {
-  // 带边界检查的索引更新
   num.value = num.value >= maxIndex.value ? 0 : num.value + 1;
   if (aplayer.value) {
-    // 正确的刷新方式：通过API重新加载播放列表
     aplayer.value.skipForward();
-    // 添加延迟确保DOM更新
     nextTick(() => {
-      // 强制播放器重新初始化
       aplayer.value?.audioRef.load()
       aplayer.value?.audioRef.play().catch(() => {
       })
     })
   }
 };
+/**
+ * 处理播放量更新事件
+ * */
+const handleVolumeChange = () => {
+  if (userStore.user.loginStatus) {
+    addPlayCount(audioList.value[num.value].rawData.id)
+  }
+}
 
+/**
+ * 记录播放历史
+ * */
+const handleRecordRecent = async () => {
+  if (!userStore.user.loginStatus) return
+
+  try {
+    await addRecentSong({
+      songId: audioList.value[num.value].rawData.id,
+      userId: userStore.user.userInfo.id,
+      updateTime: new Date().toISOString(),
+      createTime: new Date().toISOString()
+    })
+  } catch (error) {
+    console.error('记录播放历史失败:', error)
+    ElMessage.error('播放记录保存失败')
+  }
+}
+
+/**
+ * 处理歌曲播放结束事件
+ */
 const handleEnded = () => {
-  // 使用next()方法保持切换逻辑统一
+  handleRecordRecent()
+  handleVolumeChange()
   next()
 }
-// 新增响应式数据
+
+// 当前播放时间和总时长
 const currentTime = ref(0)
 const duration = ref(0)
 
-
-// 时间格式化方法
+/**
+ * 时间格式化工具函数
+ * @param seconds 总秒数
+ * @returns 格式化的分钟:秒数字符串（如 3:45）
+ */
 const formatTime = (seconds: number): string => {
   const minutes = Math.floor(seconds / 60)
   const remainingSeconds = Math.floor(seconds % 60)
   return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
 }
 
-// 处理播放进度更新
+/**
+ * 处理播放时间更新事件
+ * 同步歌词显示进度
+ */
 const handleTimeUpdate = () => {
   if (!aplayer.value?.audioRef) return
   currentTime.value = aplayer.value?.audioRef.currentTime
@@ -97,60 +163,57 @@ const handleTimeUpdate = () => {
   }
 }
 
-// 处理总时长变化
+/**
+ * 处理总时长变化事件
+ */
 const handleDurationChange = () => {
   if (!aplayer.value?.audioRef) return
   duration.value = aplayer.value?.audioRef.duration
-
 }
 
-// 处理拖动进度条
+/**
+ * 处理进度条拖动事件
+ * @param value 目标时间点（秒）或时间范围数组
+ */
 const handleSeek = (value: number | number[]) => {
   if (!aplayer.value) return
-  // 处理数组类型的情况（范围滑块）
   const seekValue = Array.isArray(value) ? value[0] : value
   aplayer.value.seek(seekValue)
 }
 
-//抽屉开关
+// 歌词抽屉显示控制
 const lrcData = ref(false)
 
-
-// 新增响应式数据
+// 歌词实例和当前歌词行号
 const lyricInstance = ref<Lyric | null>(null);
 const currentLineNum = ref(0);
 
-// 加载歌词的方法
+/**
+ * 加载歌词数据
+ * 实现歌词获取、解析和同步播放状态
+ * 处理网络错误和异常情况
+ */
 const loadLyric = async () => {
   try {
-    // 清空之前的歌词实例
     if (lyricInstance.value) {
       lyricInstance.value.stop();
       lyricInstance.value = null;
     }
 
-    // 获取当前歌曲的歌词URL（需要确保audioList中有lrc属性）
     const lrcUrl = audioList.value[num.value]?.lrc;
     if (!lrcUrl) return;
 
-    // 获取歌词内容
     const response = await fetch(lrcUrl);
     const lrcText = await response.text();
 
-    // 解析歌词
     lyricInstance.value = new Lyric(lrcText, ({curLineNum}) => {
       currentLineNum.value = curLineNum;
     });
-    console.log('当前歌词URL:', lrcUrl);
-    console.log('歌词解析结果:', lyricInstance.value);
-    console.log('歌词响应状态:', response.status);
-    console.log('原始歌词长度:', lrcText.length);
-    // 同步播放器进度
+
     if (aplayer.value?.audioRef) {
       const currentTime = aplayer.value.audioRef.currentTime;
       lyricInstance.value.seek(currentTime * 1000);
 
-      // 根据播放器实际状态控制歌词
       if (aplayer.value.audioRef.paused) {
         lyricInstance.value.stop();
       } else {
@@ -163,24 +226,36 @@ const loadLyric = async () => {
   }
 };
 
-// 当歌曲切换时重新加载歌词
+// 监听歌曲变化自动加载歌词
 watch([num, audioList], loadLyric);
 
-// 销毁时清理
+// 组件卸载前清理歌词实例
 onBeforeUnmount(() => {
   lyricInstance.value?.stop();
 });
 
+/**
+ * 处理播放事件
+ * 启动歌词滚动
+ */
 const handlePlay = () => {
   x.value = false;
   lyricInstance.value?.play();
 }
 
+/**
+ * 处理暂停事件
+ * 停止歌词滚动
+ */
 const handlePause = () => {
   x.value = true;
   lyricInstance.value?.stop();
 }
 
+/**
+ * 滚动到当前歌词行
+ * 处理容器高度未加载的延迟重试逻辑
+ */
 const scrollToLine = () => {
   nextTick(() => {
     const container = document.querySelector('.el-drawer__body .el-scrollbar__wrap') as HTMLElement
@@ -194,17 +269,20 @@ const scrollToLine = () => {
     }
   })
 }
-// 在watch中新增滚动逻辑
+/**
+ * 监听当前歌词行变化
+ * 自动执行歌词滚动对齐
+ */
 watch(currentLineNum, () => {
   nextTick(() => {
     const container = document.querySelector('.el-drawer__body .el-scrollbar__wrap') as HTMLElement
     const activeLine = document.querySelector('.text-primary') as HTMLElement
     if (container && activeLine) {
       if (container.offsetHeight === 0) {
-        setTimeout(() => scrollToLine(), 100) // 延迟重试
+        setTimeout(() => scrollToLine(), 100)
         return
       }
-      // 计算行元素实际高度
+
       const computedStyle = window.getComputedStyle(activeLine)
       const lineHeight = parseInt(computedStyle.lineHeight)
           + parseInt(computedStyle.marginTop)
@@ -213,13 +291,52 @@ watch(currentLineNum, () => {
     }
   })
 })
+
+onMounted(async () => {
+  try {
+    const res = await getCountSong()
+    songListData.songList = res.data.records
+  } catch (error) {
+    console.error('歌曲加载失败:', error)
+  }
+})
+
+
+watch(audioList, (newVal) => {
+  if (newVal.length > 0 && aplayer.value) {
+    nextTick(async () => {
+      // 强制更新APlayer内部状态的三步操作
+      aplayer.value?.clearList();      // 1.清空旧列表
+      aplayer.value?.addList(songListData.playerFormatList);  // 2.添加新列表
+      aplayer.value?.switchList("0");    // 3.切换到首曲
+      try {
+        aplayer.value?.audioRef.load();
+        if (aplayer.value?.audioRef.paused) {
+          await aplayer.value.audioRef.play();
+          x.value = false; // 同步播放状态
+        }
+      } catch (error) {
+        console.log('自动播放被阻止，需要用户交互');
+        // 可添加引导用户点击播放按钮的提示
+      }
+    });
+  }
+}, { deep: true });
+
 </script>
 
 <template>
+  <!-- 主容器：全高布局，包含播放器控件和歌词抽屉 -->
   <div class="h-full flex items-center bg-white border-t border-gray-200 ">
+    <!-- APlayer 音频播放器组件
+         :audio - 音频资源列表
+         mode - 迷你播放模式
+         @事件 - 绑定多个播放状态事件 -->
     <APlayer
         ref="aplayer"
         :audio="audioList"
+        :mutex="true"
+
         loop="'none'"
         mode="mini"
         @durationchange="handleDurationChange"
@@ -228,7 +345,8 @@ watch(currentLineNum, () => {
         @play="handlePlay"
         @timeupdate="handleTimeUpdate"
     />
-    <!-- 歌曲信息 -->
+
+    <!-- 当前歌曲信息展示区 -->
     <div class="flex items-center gap-3 min-w-[200px] px-2">
       <div>
         <div class="font-medium">{{ currentSongTitle }}</div>
@@ -236,7 +354,7 @@ watch(currentLineNum, () => {
       </div>
     </div>
 
-    <!-- 播放控制 -->
+    <!-- 播放控制按钮组 -->
     <div class="flex items-center gap-2">
       <el-button circle @click="previous">
         <el-icon>
@@ -244,6 +362,8 @@ watch(currentLineNum, () => {
         </el-icon>
       </el-button>
 
+      <!-- 播放/暂停切换按钮
+           x 表示播放状态 -->
       <el-button circle type="primary" @click="togglePlay">
         <el-icon v-if="!x">
           <VideoPause/>
@@ -259,12 +379,16 @@ watch(currentLineNum, () => {
         </el-icon>
       </el-button>
     </div>
+
+    <!-- 播放进度控制组件 -->
     <div class=" px-4 w-full">
       <div class="flex justify-start items-center gap-x-2 truncate text-xs">
         <span class="font-mono tabular-nums">{{ formatTime(currentTime) }}</span>
         <span class="font-mono tabular-nums">/</span>
         <span class="font-mono tabular-nums">{{ formatTime(duration) }}</span>
       </div>
+      <!-- 进度条组件
+           @input - 处理用户拖动进度事件 -->
       <el-slider
           v-model="currentTime"
           :format-tooltip="formatTime"
@@ -272,21 +396,22 @@ watch(currentLineNum, () => {
           @input="handleSeek"
       />
     </div>
+
+    <!-- 歌词展开按钮 -->
     <div>
-      <el-button
-          link
-          @click="lrcData = true"
-      >
+      <el-button link @click="lrcData = true">
         <el-icon>
-          <el-icon>
-            <ArrowUpBold/>
-          </el-icon>
+          <ArrowUpBold/>
         </el-icon>
       </el-button>
     </div>
   </div>
-  <!-- 抽屉组件，用于显示歌词 -->
+
+  <!-- 歌词抽屉组件 -->
   <div>
+    <!-- 底部弹出的歌词面板
+         :direction - 从底部弹出
+         class - 渐变背景样式 -->
     <el-drawer
         v-model="lrcData"
         :direction="'btt'"
@@ -294,17 +419,18 @@ watch(currentLineNum, () => {
         size="100%"
     >
       <template #default>
-        <el-scrollbar
-            ref="scrollbarRef"
-            always
-            class="!scrollbar-hide"
-        >
+        <!-- 歌词滚动容器 -->
+        <el-scrollbar ref="scrollbarRef" always class="!scrollbar-hide">
           <div class="lyric-container h-full text-center py-2">
+            <!-- 动态歌词内容区
+                 :style - 根据当前歌词行号调整位置 -->
             <div
                 v-if="lyricInstance"
                 :style="{ paddingTop: `calc(20vh - ${currentLineNum} * 4rem - 0.5rem)` }"
                 class="lyric-content space-y-4"
             >
+              <!-- 歌词行渲染
+                   :class - 当前歌词行高亮样式 -->
               <div
                   v-for="(line, index) in lyricInstance.lines"
                   :key="index"
@@ -318,23 +444,22 @@ watch(currentLineNum, () => {
               </div>
             </div>
 
-            <div v-else class="text-gray-500 mt-20">
-              暂无歌词
-            </div>
+            <!-- 无歌词提示 -->
+            <div v-else class="text-gray-500 mt-20">暂无歌词</div>
           </div>
         </el-scrollbar>
       </template>
 
-
+      <!-- 抽屉底部控制栏 -->
       <template #footer>
-
-        <div class="h-full flex flex-col px-2 space-y-1  ">
-
+        <div class="h-full flex flex-col px-2 space-y-1">
+          <!-- 歌曲信息展示 -->
           <div class="text-center">
             <h2 class="text-xl font-bold">{{ currentSongTitle }}</h2>
             <p class="text-gray-500">{{ currentSongAuthor }}</p>
           </div>
 
+          <!-- 播放进度控制（抽屉样式） -->
           <div class="flex-1 flex flex-col justify-center">
             <div class="space-y-0">
               <div class="flex justify-between text-sm">
@@ -349,14 +474,14 @@ watch(currentLineNum, () => {
               />
             </div>
           </div>
-          <!-- 控制按钮（复用相同方法） -->
+
+          <!-- 抽屉播放控制按钮 -->
           <div class="flex justify-center items-center gap-4">
             <el-button circle @click="previous">
               <el-icon>
                 <ArrowLeft/>
               </el-icon>
             </el-button>
-
             <el-button circle size="large" type="primary" @click="togglePlay">
               <el-icon v-if="!x">
                 <VideoPause/>
@@ -365,7 +490,6 @@ watch(currentLineNum, () => {
                 <VideoPlay/>
               </el-icon>
             </el-button>
-
             <el-button circle @click="next">
               <el-icon>
                 <ArrowRight/>
@@ -376,20 +500,19 @@ watch(currentLineNum, () => {
       </template>
     </el-drawer>
   </div>
-
-
 </template>
 
+<!-- 歌词区域样式
+     lyric-container - 固定高度容器
+     lyric-content - 动态歌词位置过渡效果 -->
 <style scoped>
 .lyric-container {
   height: 70vh;
-  /* 移除 overflow-y: auto */
 }
 
 .lyric-content {
   padding: 20vh 0;
   transition: padding-top 0.5s ease-in-out;
-  min-height: calc(100% - 40vh); /* 动态高度适应 */
+  min-height: calc(100% - 40vh);
 }
-
 </style>

@@ -6,19 +6,29 @@ export const useSongListStore = defineStore('songList', () => {
     const playerFormatList = computed(() => {
         return songList.value.map(song => ({
             title: song.name,          // 映射歌曲名称
-            author: song.singerName,
-            pic: song.pic,             // 封面字段保持一致
+            author: song.singerName, pic: song.pic,             // 封面字段保持一致
             url: song.music,           // 音乐文件地址
             lrc: song.lyric,           // 歌词文件
-            rawData: { ...song }
+            rawData: {...song}
 
         }));
     });
 
-    
+    const resetSongList = () => {
+        songList.value = []
+    }
+
+    async function addToPlaylist(song: SongModel){
+        songList.value = [song, ...songList.value]
+        return songList.value
+    }
 
     return {
-        songList,
-        playerFormatList
+        songList, playerFormatList, resetSongList, addToPlaylist
     }
+}, {
+    persist: {
+        storage: localStorage, key: 'songList-store'
+    }
+
 })

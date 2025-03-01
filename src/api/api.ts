@@ -26,11 +26,33 @@ export function getUserInfo(id: number) {
 }
 
 //按播放量查询所有歌曲
-export function getAllSong() {
+export function getCountSong() {
     return get(`/song/getPlayCount`, {})
 }
 
 //添加歌曲接口
 export function addSong(data: any) {
     return post(`/song/add`, data)
+}
+
+//播放量添加
+export function addPlayCount(id: number) {
+    return post(`/song/addPlayCount/${id}`, {})
+}
+//添加歌单
+export function addSongList(data: any) {
+    return post(`/songList/add`, data)
+}
+//添加歌手信息
+export function addSinger(data: any) {
+    return post(`/singer/add`, data)
+}
+//id查询歌曲
+export function getSongOfId(id: number) {
+    return get(`/song/get/${id}`, {id})
+}
+//新增播放记录
+export function addRecentSong(data:any){
+    console.log(data);
+    return post(`/recent-song/add`,data)
 }
