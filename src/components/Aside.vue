@@ -16,8 +16,8 @@ onMounted(async () => {
   <div class="h-full flex flex-col">
     <div class="flex justify-center py-4">
       <div
-          @click="router.push('/myInformation')"
-          class="w-32 h-32 rounded-full border-2 border-gray-300 hover:border-blue-500 transition-colors flex items-center justify-center overflow-hidden">
+          class="w-32 h-32 rounded-full border-2 border-gray-300 hover:border-blue-500 transition-colors flex items-center justify-center overflow-hidden"
+          @click="router.push('/myInformation')">
         <img v-if="userStore.user.userInfo.avatar" :src="userStore.user.userInfo.avatar"
              class="w-full h-full object-cover">
       </div>
@@ -54,6 +54,7 @@ onMounted(async () => {
             <el-menu-item class="ps-12" index="/uploadMusic">上传音乐</el-menu-item>
             <el-menu-item class="ps-12" index="/uploadPlaylist">上传歌单</el-menu-item>
             <el-menu-item class="ps-12" index="/uploadSinger">上传歌手信息</el-menu-item>
+            <el-menu-item class="ps-12" index="/songUploadList">歌曲上传歌单</el-menu-item>
           </el-sub-menu>
 
           <!-- 登录后才显示的收藏部分 -->
@@ -66,22 +67,14 @@ onMounted(async () => {
             </template>
             <el-menu-item index="/mySongCollection">我收藏的歌曲</el-menu-item>
             <el-menu-item index="/recentPlay">最近播放</el-menu-item>
-            <el-menu-item-group>
+            <el-sub-menu index="2-2">
               <template #title>
-                <span class="ms-2">我的歌单</span>
+                <span class="ms-2">我收藏的歌单</span>
               </template>
-<!--              <el-sub-menu index="2-1">
-                <template #title>
-                  <span class="ms-2">我创建的歌单</span>
-                </template>
-              </el-sub-menu>-->
-              <el-sub-menu index="2-2">
-                <template #title>
-                  <span class="ms-2">我收藏的歌单</span>
-                </template>
-                <el-menu-item v-for="item in collectSongList" :kay="item.id" :index="'/playlist/' + item.id" >{{item.name}}</el-menu-item>
-              </el-sub-menu>
-            </el-menu-item-group>
+              <el-menu-item v-if = "collectSongList" v-for="item in collectSongList" :index="'/playlist/' + item.id" :kay="item.id">
+                {{ item.name }}
+              </el-menu-item>
+            </el-sub-menu>
           </el-sub-menu>
         </el-menu>
       </el-scrollbar>

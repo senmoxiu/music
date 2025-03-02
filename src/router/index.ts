@@ -18,6 +18,8 @@ const router = createRouter({
         path:'/mySongCollection',name:'mmySongCollection',component:()=>import('@/views/my/MySongCollection.vue')
     },{
         path:'/recentPlay',name:'recentPlay',component:()=>import('@/views/my/RecentPlay.vue')
+    },{
+        path:'/songUploadList',name:'songUploadList',component:()=>import('@/views/upload/SongUploadList.vue')
     }
 
     ]

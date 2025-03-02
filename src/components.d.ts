@@ -12,6 +12,7 @@ declare module 'vue' {
     ElAside: typeof import('element-plus/es')['ElAside']
     ElAvatar: typeof import('element-plus/es')['ElAvatar']
     ElButton: typeof import('element-plus/es')['ElButton']
+    ElCard: typeof import('element-plus/es')['ElCard']
     ElCarousel: typeof import('element-plus/es')['ElCarousel']
     ElCarouselItem: typeof import('element-plus/es')['ElCarouselItem']
     ElCol: typeof import('element-plus/es')['ElCol']
@@ -39,6 +40,7 @@ declare module 'vue' {
     ElMenuItem: typeof import('element-plus/es')['ElMenuItem']
     ElMenuItemGroup: typeof import('element-plus/es')['ElMenuItemGroup']
     ElOption: typeof import('element-plus/es')['ElOption']
+    ElPagination: typeof import('element-plus/es')['ElPagination']
     ElProgress: typeof import('element-plus/es')['ElProgress']
     ElRadio: typeof import('element-plus/es')['ElRadio']
     ElRadioGroup: typeof import('element-plus/es')['ElRadioGroup']
@@ -58,5 +60,8 @@ declare module 'vue' {
     Player: typeof import('./components/Player.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+  }
+  export interface ComponentCustomProperties {
+    vLoading: typeof import('element-plus/es')['ElLoadingDirective']
   }
 }

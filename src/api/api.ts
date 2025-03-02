@@ -72,3 +72,16 @@ export function getRecentSong(id:number){
 export function addCollect(data:any){
     return post(`/collect/add`,data)
 }
+
+//添加歌曲到歌单
+export function addSongsToPlaylist(songListId: number, songIds: number[]){
+    return post(`/song/addToSongList?songListId=${songListId}`, songIds)
+}
+//查询歌单
+export function getPlaylists(data:any){
+    return post(`/songList/searchList`,data)
+}
+//查询歌曲
+export function getSongs(data:any){
+    return post(`/song/getByCondition`,data)
+}
