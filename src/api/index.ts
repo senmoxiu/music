@@ -7,7 +7,6 @@ const request = axios.create({
     headers: {
         // 设置后端需要的传参类型
         // 'Content-Type': 'application/json',
-        // 'token': x-auth-token',//一开始就要token
         // 'X-Requested-With': 'XMLHttpRequest',
     },
 })
@@ -20,11 +19,11 @@ request.interceptors.request.use(config => {
     } else if (!config.headers['Content-Type']) {
         config.headers['Content-Type'] = 'application/json'
     }
-    // 如果你要去localStor获取token,(如果你有)
-    // let token = localStorage.getItem("x-auth-token");
+    // // 如果你要去localStor获取token,(如果你有)
+    // let token = localStorage.getItem("satoken");
     // if (token) {
-    //添加请求头
-    //config.headers["Authorization"]="Bearer "+ token
+    // // 添加请求头
+    // config.headers["satoken"]= token
     // }
     return config
 }, error => {
@@ -34,10 +33,18 @@ request.interceptors.request.use(config => {
 
 // response 拦截器
 request.interceptors.response.use(response => {
-    // 对响应数据做点什么
+    // 检查是否存在新token（根据sa-token的续期机制）
+    const newToken = response.headers['satoken']
+    if(newToken){
+        localStorage.setItem("satoken", newToken)
+    }
     return response.data
 }, error => {
     // 对响应错误做点什么
+    if(error.response?.status === 401){
+        localStorage.removeItem("satoken")
+        window.location.href = '/login'
+    }
     return Promise.reject(error)
 })
 export default request

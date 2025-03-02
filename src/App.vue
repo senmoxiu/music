@@ -22,7 +22,7 @@
 
     </el-container>
 
-    <el-footer class="border-t border-gray-200 h-[50px]">  <!-- 固定高度 -->
+    <el-footer class="border-t border-gray-200 h-[50px] px-0">  <!-- 固定高度 -->
       <Footer/>
     </el-footer>
   </el-container>
@@ -39,4 +39,5 @@
   width: 50px !important;
   height: 50px !important;
 }
+
 </style>

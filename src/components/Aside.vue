@@ -2,9 +2,14 @@
 import {useUserStore} from '@/stores/modules/useUserStore'
 import {Menu as IconMenu, Upload, User} from "@element-plus/icons-vue";
 import router from "@/router";
+import {getCollectSongList} from "@/api/api.ts";
 
+const collectSongList = ref([])
 const userStore = useUserStore()
-
+onMounted(async () => {
+  const res = await getCollectSongList(userStore.user.userInfo.id)
+  collectSongList.value = res.data
+})
 </script>
 
 <template class="w-full h-full flex flex-col">
@@ -34,11 +39,11 @@ const userStore = useUserStore()
               </el-icon>
               <span class="ms-2">推荐</span>
             </template>
-            <el-menu-item class="ps-12" index="/hotPlaylists">热门歌单</el-menu-item>
-            <el-menu-item class="ps-12" index="/hotSongs">热门歌曲</el-menu-item>
+            <el-menu-item class="ps-12" index="/hotPlaylists">推荐歌单</el-menu-item>
+            <el-menu-item class="ps-12" index="/hotSongs">推荐歌曲</el-menu-item>
           </el-sub-menu>
 
-          <!--上传部分-->
+          <!--上传部分 除歌单上传外，其他的后续转到后台系统-->
           <el-sub-menu v-if="userStore.user.loginStatus" index="2">
             <template #title>
               <el-icon>
@@ -65,16 +70,16 @@ const userStore = useUserStore()
               <template #title>
                 <span class="ms-2">我的歌单</span>
               </template>
-              <el-sub-menu index="2-1">
+<!--              <el-sub-menu index="2-1">
                 <template #title>
                   <span class="ms-2">我创建的歌单</span>
                 </template>
-<!--                <el-menu-item v-for="" index="/mySongList"></el-menu-item>-->
-              </el-sub-menu>
+              </el-sub-menu>-->
               <el-sub-menu index="2-2">
                 <template #title>
                   <span class="ms-2">我收藏的歌单</span>
                 </template>
+                <el-menu-item v-for="item in collectSongList" :kay="item.id" :index="'/playlist/' + item.id" >{{item.name}}</el-menu-item>
               </el-sub-menu>
             </el-menu-item-group>
           </el-sub-menu>

@@ -56,3 +56,19 @@ export function addRecentSong(data:any){
     console.log(data);
     return post(`/recent-song/add`,data)
 }
+//查询用户收藏歌曲
+export function getCollectSong(id:number){
+    return get(`/collect/detail/${id}`,{id})
+}
+//查询用户收藏的歌单
+export function getCollectSongList(id:number){
+    return get(`/collect/playlist/${id}`,{id})
+}
+//查询用户最近播放的音乐
+export function getRecentSong(id:number){
+    return get(`/recent-song/recentSongOfUserId/${id}`,{id})
+}
+//添加收藏歌曲/歌单
+export function addCollect(data:any){
+    return post(`/collect/add`,data)
+}

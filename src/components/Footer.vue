@@ -1,12 +1,12 @@
 <script lang="ts" setup>
 //@ts-ignore
 import APlayer from "@worstone/vue-aplayer";
-import {ArrowLeft, ArrowRight, ArrowUpBold, VideoPause, VideoPlay} from "@element-plus/icons-vue";
+import {ArrowLeft, ArrowRight, ArrowUpBold, Star, StarFilled, VideoPause, VideoPlay} from "@element-plus/icons-vue";
 import {useSongListStore} from "@/stores/modules/useSongListStore.ts";
 import Lyric from 'lyric-resolver';
 import {ElMessage} from "element-plus";
 import {useUserStore} from "@/stores/modules/useUserStore.ts";
-import {addPlayCount, addRecentSong, getCountSong} from "@/api/api.ts";
+import {addCollect, addPlayCount, addRecentSong, getCollectSong, getCountSong} from "@/api/api.ts";
 
 // 查询用户登录状态
 const userStore = useUserStore()
@@ -227,7 +227,10 @@ const loadLyric = async () => {
 };
 
 // 监听歌曲变化自动加载歌词
-watch([num, audioList], loadLyric);
+watch([num, audioList],()=>{
+  checkCollectionStatus();
+  loadLyric()
+});
 
 // 组件卸载前清理歌词实例
 onBeforeUnmount(() => {
@@ -322,7 +325,36 @@ watch(audioList, (newVal) => {
     });
   }
 }, { deep: true });
+const isCollected = ref(false); // 收藏状态
+const handleCollect = async () => {
+  const data ={
+    createTime: new Date().toISOString(),
+    songId: songListData.songList[num.value].id,
+    userId: userStore.user.userInfo.id,
+    type: 0
+  }
+  try {
+    const res = await addCollect(data);
+    isCollected.value = !isCollected.value; // 切换状态
+    ElMessage.success(res.msg);
+  } catch (error) {
+    ElMessage.error(error);
+  }
+}
 
+
+const checkCollectionStatus = async () => {
+  if (!userStore.user.loginStatus) return;
+
+  try {
+    const res = await getCollectSong(userStore.user.userInfo.id);
+    isCollected.value = res.data.some((song: any) =>
+        song.id === songListData.songList[num.value]?.id
+    );
+  } catch (error) {
+    console.error('收藏状态查询失败:', error);
+  }
+}
 </script>
 
 <template>
@@ -396,9 +428,18 @@ watch(audioList, (newVal) => {
           @input="handleSeek"
       />
     </div>
-
+<!--收藏按钮-->
+    <div>
+      <el-button link @click="handleCollect" :disabled="!userStore.user.loginStatus">
+        <el-icon :class="{ '!text-yellow-400': isCollected }">
+          <StarFilled v-if="isCollected" />
+          <Star v-else />
+        </el-icon>
+      </el-button>
+    </div>
     <!-- 歌词展开按钮 -->
     <div>
+
       <el-button link @click="lrcData = true">
         <el-icon>
           <ArrowUpBold/>
@@ -514,5 +555,9 @@ watch(audioList, (newVal) => {
   padding: 20vh 0;
   transition: padding-top 0.5s ease-in-out;
   min-height: calc(100% - 40vh);
+}
+/* 添加过渡动画 */
+.el-icon {
+  transition: color 0.3s ease;
 }
 </style>

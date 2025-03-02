@@ -14,6 +14,10 @@ const router = createRouter({
         path: '/uploadPlaylist', name: 'uploadPlaylist', component: () => import('@/views/upload/UploadPlaylist.vue')
     },{
         path:'/uploadSinger',name:'uploadSinger',component:()=>import('@/views/upload/UploadSinger.vue')
+    },{
+        path:'/mySongCollection',name:'mmySongCollection',component:()=>import('@/views/my/MySongCollection.vue')
+    },{
+        path:'/recentPlay',name:'recentPlay',component:()=>import('@/views/my/RecentPlay.vue')
     }
 
     ]

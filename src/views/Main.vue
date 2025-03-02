@@ -49,7 +49,7 @@ const playSong = async (id: number) => {
       </el-carousel-item>
     </el-carousel>
     <div>
-      <el-table :data="data" class="w-auto" height="355">
+      <el-table :data="data" class="w-auto">
         <el-table-column
         label="#"
         width="50"

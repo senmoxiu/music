@@ -4,8 +4,7 @@ import {useUserStore} from '@/stores/modules/useUserStore'
 import {getUserId, getUserInfo, login, logout, register} from '@/api/api.ts'
 import {ElMessage, type FormInstance, type UploadProps} from "element-plus";
 import dayjs from 'dayjs'
-import Footer from "@/components/Footer.vue";
-import {useSongListStore} from "@/stores/modules/useSongListStore.ts";
+
 
 const userStore = useUserStore()
 const loginStatus = computed(() => userStore.user.loginStatus)
@@ -56,7 +55,6 @@ const handleLogout = () => {
   userStore.resetUser()
   logout(null)
   router.push('/')
-
 }
 
 // 注册弹窗控制
