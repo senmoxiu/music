@@ -85,3 +85,12 @@ export function getPlaylists(data:any){
 export function getSongs(data:any){
     return post(`/song/getByCondition`,data)
 }
+
+// 获取推荐歌单
+export function getRecommendPlaylists(userId: number) {
+    return get(`/recent-song/recommendSongList/${userId}`, { userId })
+}
+//查看歌单内的歌曲
+export function getPlaylistSongs(id: number) {
+    return get(`/songList/${id}/songs`, { id })
+}

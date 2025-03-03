@@ -23,8 +23,13 @@ export const useSongListStore = defineStore('songList', () => {
         return songList.value
     }
 
+    async function addSongList(data:any) {
+        songList.value = data
+        return songList.value
+    }
+
     return {
-        songList, playerFormatList, resetSongList, addToPlaylist
+        songList, playerFormatList, resetSongList, addToPlaylist,addSongList
     }
 }, {
     persist: {

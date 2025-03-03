@@ -7,8 +7,11 @@ import {getCollectSongList} from "@/api/api.ts";
 const collectSongList = ref([])
 const userStore = useUserStore()
 onMounted(async () => {
-  const res = await getCollectSongList(userStore.user.userInfo.id)
-  collectSongList.value = res.data
+  if (userStore.user.loginStatus){
+    const res = await getCollectSongList(userStore.user.userInfo.id)
+    collectSongList.value = res.data
+    console.log(collectSongList.value)
+  }
 })
 </script>
 
@@ -40,7 +43,7 @@ onMounted(async () => {
               <span class="ms-2">推荐</span>
             </template>
             <el-menu-item class="ps-12" index="/hotPlaylists">推荐歌单</el-menu-item>
-            <el-menu-item class="ps-12" index="/hotSongs">推荐歌曲</el-menu-item>
+<!--            <el-menu-item class="ps-12" index="/hotSongs">推荐歌曲</el-menu-item>-->
           </el-sub-menu>
 
           <!--上传部分 除歌单上传外，其他的后续转到后台系统-->

@@ -20,8 +20,9 @@ const router = createRouter({
         path:'/recentPlay',name:'recentPlay',component:()=>import('@/views/my/RecentPlay.vue')
     },{
         path:'/songUploadList',name:'songUploadList',component:()=>import('@/views/upload/SongUploadList.vue')
+    },{
+        path:'/playlist/:id', name: 'Playlist', component: () => import('@/views/Playlist.vue'),
     }
-
     ]
 })
 export default router
