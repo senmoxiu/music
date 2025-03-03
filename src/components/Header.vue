@@ -14,9 +14,17 @@ const loginDialog = reactive({
   username: '',
   password: '',
 })
-
+const searchKey = ref('')
 const handleSearch = () => {
-//搜索功能
+
+  const keywords = searchKey.value
+  console.log(keywords)
+  if (keywords) {
+    router.push({
+      path: '/search',
+      query: { keywords }
+    })
+  }
 }
 
 //登录按键
@@ -33,7 +41,10 @@ const loginProcessing = () => {
           getUserId(null)
               .then((res) => {
                 userStore.user.userInfo.id = res
+                localStorage.getItem('satoken',res.data)
+                console.log(res.data  )
                 handleUserInfo(userStore.user.userInfo.id)
+
               })
         } else {
           ElMessage.error(res.msg)
@@ -46,6 +57,7 @@ const handleUserInfo = (id: number) => {
   getUserInfo(id)
       .then((res) => {
         userStore.user.userInfo = res.data
+
       })
 }
 
@@ -220,7 +232,7 @@ defineExpose({
     </router-link>
     <div class="flex-1 max-w-2xl mx-6 pb-2">
       <el-input
-
+          v-model="searchKey"
           :prefix-icon="Search"
           class="!rounded-full px-4 border-gray-300"
           placeholder="搜索歌曲/歌手"

@@ -12,16 +12,20 @@ const router = createRouter({
         path: '/uploadMusic', name: 'uploadMusic', component: () => import('@/views/upload/UploadMusic.vue')
     }, {
         path: '/uploadPlaylist', name: 'uploadPlaylist', component: () => import('@/views/upload/UploadPlaylist.vue')
+    }, {
+        path: '/uploadSinger', name: 'uploadSinger', component: () => import('@/views/upload/UploadSinger.vue')
+    }, {
+        path: '/mySongCollection', name: 'mmySongCollection', component: () => import('@/views/my/MySongCollection.vue')
+    }, {
+        path: '/recentPlay', name: 'recentPlay', component: () => import('@/views/my/RecentPlay.vue')
+    }, {
+        path: '/songUploadList', name: 'songUploadList', component: () => import('@/views/upload/SongUploadList.vue')
+    }, {
+        path: '/playlist/:id', name: 'Playlist', component: () => import('@/views/Playlist.vue'),
+    }, {
+        path: '/search', name: 'Search', component: () => import('@/views/Search.vue'),
     },{
-        path:'/uploadSinger',name:'uploadSinger',component:()=>import('@/views/upload/UploadSinger.vue')
-    },{
-        path:'/mySongCollection',name:'mmySongCollection',component:()=>import('@/views/my/MySongCollection.vue')
-    },{
-        path:'/recentPlay',name:'recentPlay',component:()=>import('@/views/my/RecentPlay.vue')
-    },{
-        path:'/songUploadList',name:'songUploadList',component:()=>import('@/views/upload/SongUploadList.vue')
-    },{
-        path:'/playlist/:id', name: 'Playlist', component: () => import('@/views/Playlist.vue'),
+        path:'/myInformation',name:'MyInformation',component:()=>import('@/views/my/MyInformation.vue')
     }
     ]
 })

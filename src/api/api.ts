@@ -1,4 +1,4 @@
-import {deleteRequest, get, post} from "./http.ts";
+import {deleteRequest, get, post, put} from "./http.ts";
 
 //登录接口
 export function login(data: any) {
@@ -97,4 +97,8 @@ export function getPlaylistSongs(id: number) {
 //取消收藏
 export function deleteCollect(id: number){
     return deleteRequest(`/collect/cancel/${id}`,{})
+}
+//用户信息修改
+export function updateUserInfo(data: any) {
+    return put(`/consumer/update`, data)
 }

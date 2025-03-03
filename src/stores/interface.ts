@@ -1,10 +1,11 @@
 //用户信息
 export interface UserModel {
     id: number;
+    birth: string;
     username: string;
     password: string;
     sex: number;
-    phone: string;
+    phoneNum: string;
     email: string;
     introduction: string;
     location: string;

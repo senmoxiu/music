@@ -10,10 +10,11 @@ export const useUserStore = defineStore('user', () => {
         user.value = {
             userInfo: {
                 id: 0,
+                birth: '',
                 username: '',
                 password: '',
                 sex: 0,
-                phone: '',
+                phoneNum: '',
                 email: '',
                 introduction: '',
                 location: '',

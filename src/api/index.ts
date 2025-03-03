@@ -19,12 +19,13 @@ request.interceptors.request.use(config => {
     } else if (!config.headers['Content-Type']) {
         config.headers['Content-Type'] = 'application/json'
     }
-    // // 如果你要去localStor获取token,(如果你有)
-    // let token = localStorage.getItem("satoken");
-    // if (token) {
-    // // 添加请求头
-    // config.headers["satoken"]= token
-    // }
+    // 如果你要去localStor获取token,(如果你有)
+    let token = localStorage.getItem("satoken");
+    if (token) {
+        config.headers["satoken"] = token
+    } else {
+        delete config.headers["satoken"] // 确保无token时不传空值
+    }
     return config
 }, error => {
     // 对请求错误做些什么
@@ -34,7 +35,7 @@ request.interceptors.request.use(config => {
 // response 拦截器
 request.interceptors.response.use(response => {
     // 检查是否存在新token（根据sa-token的续期机制）
-    const newToken = response.headers['satoken']
+    const newToken = response.headers['satoken'] || response.data?.token
     if(newToken){
         localStorage.setItem("satoken", newToken)
     }
