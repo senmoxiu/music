@@ -1,4 +1,4 @@
-import {get, post} from "./http.ts";
+import {deleteRequest, get, post} from "./http.ts";
 
 //登录接口
 export function login(data: any) {
@@ -93,4 +93,8 @@ export function getRecommendPlaylists(userId: number) {
 //查看歌单内的歌曲
 export function getPlaylistSongs(id: number) {
     return get(`/songList/${id}/songs`, { id })
+}
+//取消收藏
+export function deleteCollect(id: number){
+    return deleteRequest(`/collect/cancel/${id}`,{})
 }

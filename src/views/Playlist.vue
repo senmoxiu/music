@@ -2,7 +2,7 @@
 import { CaretRight, Star } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import { onMounted, ref } from 'vue'
-import {addCollect, getPlaylists, getPlaylistSongs, getSongOfId} from "@/api/api.ts";
+import {addCollect, getCollectSongList, getPlaylists, getPlaylistSongs, getSongOfId} from "@/api/api.ts";
 import {useSongListStore} from "@/stores/modules/useSongListStore.ts";
 import {useUserStore} from "@/stores/modules/useUserStore.ts";
 
@@ -29,7 +29,7 @@ interface PlaylistDetail {
 const router = useRouter()
 const playlistDetail = ref<PlaylistDetail>()
 const loading = ref(true)
-
+const isCollected = ref(false)
 // 获取歌单详情
 const fetchPlaylistDetail = async (id: number) => {
   try {
@@ -38,9 +38,14 @@ const fetchPlaylistDetail = async (id: number) => {
     })
     if (res.code === 100200) {
       playlistDetail.value = res.data.records[0]
+      if(userStore.user.loginStatus){
+        const res = await getCollectSongList(userStore.user.userInfo.id)
+        isCollected.value = res.data.some((item:any) => item.id === playlistDetail.value?.id)
+      }
       // 获取歌单歌曲
       const songsRes = await getPlaylistSongs(id)
       playlistDetail.value.songs = songsRes.data
+
     }
   } catch (error) {
     console.error('数据加载失败:', error)
@@ -51,20 +56,23 @@ const fetchPlaylistDetail = async (id: number) => {
 
 // 收藏歌单
 const handleCollect = async () => {
-  await addCollect({
-    createTime: new Date().toISOString(),
-    type: 1,
-    userId: userStore.user.userInfo.id,
-    songListId: playlistDetail.value?.id
-  })
-  console.log('收藏歌单:', playlistDetail.value?.id)
+  try {
+    await addCollect({
+      createTime: new Date().toISOString(),
+      type: 1,
+      userId: userStore.user.userInfo.id,
+      songListId: playlistDetail.value?.id
+    })
+    isCollected.value = !isCollected.value
+    ElMessage.success(isCollected.value ? '收藏成功' : '取消收藏成功')
+  } catch (error) {
+    console.error('操作失败:', error)
+  }
 }
-
 // 播放全部
 const playAll = async () => {
   if (playlistDetail.value?.songs) {
     await songList.addSongList(playlistDetail.value.songs)
-    console.log('播放全部歌曲')
   }
 }
 
@@ -78,6 +86,8 @@ onMounted(() => {
   const id = Number(router.currentRoute.value.params.id)
   fetchPlaylistDetail(id)
 })
+
+
 </script>
 
 <template>
@@ -108,12 +118,13 @@ onMounted(() => {
             播放全部
           </el-button>
           <el-button
-            type="info"
-            size="large"
-            @click="handleCollect"
+              type="info"
+              size="large"
+              :type="isCollected ? 'primary' : 'info'"
+              @click="handleCollect"
           >
             <el-icon class="mr-2"><Star /></el-icon>
-            收藏歌单
+            {{ isCollected ? '已收藏' : '收藏歌单' }}
           </el-button>
         </div>
       </div>

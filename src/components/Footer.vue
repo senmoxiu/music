@@ -6,7 +6,7 @@ import {useSongListStore} from "@/stores/modules/useSongListStore.ts";
 import Lyric from 'lyric-resolver';
 import {ElMessage} from "element-plus";
 import {useUserStore} from "@/stores/modules/useUserStore.ts";
-import {addCollect, addPlayCount, addRecentSong, getCollectSong, getCountSong} from "@/api/api.ts";
+import {addCollect, addPlayCount, addRecentSong, deleteCollect, getCollectSong, getCountSong} from "@/api/api.ts";
 
 // 查询用户登录状态
 const userStore = useUserStore()
@@ -227,7 +227,7 @@ const loadLyric = async () => {
 };
 
 // 监听歌曲变化自动加载歌词
-watch([num, audioList],()=>{
+watch([num, audioList], () => {
   checkCollectionStatus();
   loadLyric()
 });
@@ -324,17 +324,22 @@ watch(audioList, (newVal) => {
       }
     });
   }
-}, { deep: true });
+}, {deep: true});
 const isCollected = ref(false); // 收藏状态
 const handleCollect = async () => {
-  const data ={
-    createTime: new Date().toISOString(),
-    songId: songListData.songList[num.value].id,
-    userId: userStore.user.userInfo.id,
-    type: 0
-  }
   try {
-    const res = await addCollect(data);
+    let res
+    if (isCollected.value) {
+      res = await deleteCollect(songListData.songList[num.value].id)
+    } else {
+      const data = {
+        createTime: new Date().toISOString(),
+        songId: songListData.songList[num.value].id,
+        userId: userStore.user.userInfo.id,
+        type: 0
+      }
+      res = await addCollect(data);
+    }
     isCollected.value = !isCollected.value; // 切换状态
     ElMessage.success(res.msg);
   } catch (error) {
@@ -344,7 +349,10 @@ const handleCollect = async () => {
 
 
 const checkCollectionStatus = async () => {
-  if (!userStore.user.loginStatus) return;
+  if (!userStore.user.loginStatus) {
+    isCollected.value = false;
+    return;
+  }
 
   try {
     const res = await getCollectSong(userStore.user.userInfo.id);
@@ -353,6 +361,7 @@ const checkCollectionStatus = async () => {
     );
   } catch (error) {
     console.error('收藏状态查询失败:', error);
+    isCollected.value = false;
   }
 }
 </script>
@@ -428,12 +437,12 @@ const checkCollectionStatus = async () => {
           @input="handleSeek"
       />
     </div>
-<!--收藏按钮-->
+    <!--收藏按钮-->
     <div>
-      <el-button link @click="handleCollect" :disabled="!userStore.user.loginStatus">
+      <el-button :disabled="!userStore.user.loginStatus" link @click="handleCollect">
         <el-icon :class="{ '!text-yellow-400': isCollected }">
-          <StarFilled v-if="isCollected" />
-          <Star v-else />
+          <StarFilled v-if="isCollected"/>
+          <Star v-else/>
         </el-icon>
       </el-button>
     </div>
@@ -556,6 +565,7 @@ const checkCollectionStatus = async () => {
   transition: padding-top 0.5s ease-in-out;
   min-height: calc(100% - 40vh);
 }
+
 /* 添加过渡动画 */
 .el-icon {
   transition: color 0.3s ease;

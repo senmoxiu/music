@@ -3,8 +3,16 @@ import {useUserStore} from '@/stores/modules/useUserStore'
 import {Menu as IconMenu, Upload, User} from "@element-plus/icons-vue";
 import router from "@/router";
 import {getCollectSongList} from "@/api/api.ts";
+interface CollectPlaylist {
+  id: number
+  title: string
+  pic: string
+  introduction: string
+  style: string
+  userId: number
+}
 
-const collectSongList = ref([])
+const collectSongList = ref<CollectPlaylist[]>([])
 const userStore = useUserStore()
 onMounted(async () => {
   if (userStore.user.loginStatus){
@@ -74,8 +82,16 @@ onMounted(async () => {
               <template #title>
                 <span class="ms-2">我收藏的歌单</span>
               </template>
-              <el-menu-item v-if = "collectSongList" v-for="item in collectSongList" :index="'/playlist/' + item.id" :kay="item.id">
-                {{ item.name }}
+              <template v-if="collectSongList.length > 0">
+                <el-menu-item
+                    v-for="item in collectSongList"
+                    :key="item.id"
+                    :index="'/playlist/' + item.id">
+                  {{ item.title }}
+                </el-menu-item>
+              </template>
+              <el-menu-item v-else disabled>
+                {{ collectSongList.length === 0 ? '暂无收藏歌单' : '加载中...' }}
               </el-menu-item>
             </el-sub-menu>
           </el-sub-menu>
