@@ -26,6 +26,8 @@ const router = createRouter({
         path: '/search', name: 'Search', component: () => import('@/views/Search.vue'),
     },{
         path:'/myInformation',name:'MyInformation',component:()=>import('@/views/my/MyInformation.vue')
+    },{
+        path:'/aiDialogue',name:'AiDialogue',component:()=>import('@/views/AiChat.vue')
     }
     ]
 })

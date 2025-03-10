@@ -330,7 +330,7 @@ const handleCollect = async () => {
   try {
     let res
     if (isCollected.value) {
-      res = await deleteCollect(songListData.songList[num.value].id)
+      res = await deleteCollect(songListData.songList[num.value].id,userStore.user.userInfo.id)
     } else {
       const data = {
         createTime: new Date().toISOString(),

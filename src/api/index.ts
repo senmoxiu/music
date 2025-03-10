@@ -23,6 +23,8 @@ request.interceptors.request.use(config => {
     let token = localStorage.getItem("satoken");
     if (token) {
         config.headers["satoken"] = token
+        config.headers["token"] = token
+        config.headers["Authorization"] = token
     } else {
         delete config.headers["satoken"] // 确保无token时不传空值
     }

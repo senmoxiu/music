@@ -2,9 +2,12 @@
 import {getCountSong, getSongOfId} from "@/api/api.ts";
 import {useSongListStore} from "@/stores/modules/useSongListStore.ts";
 import {CaretRight} from "@element-plus/icons-vue";
-
+import {getRecommendPlaylists} from "@/api/api.ts";
+import {useUserStore} from "@/stores/modules/useUserStore.ts";
 const songList = useSongListStore()
 let data = ref<any[]>()
+const playlists = ref<any[]>([]);
+const userStore = useUserStore();
 
 onMounted(async () => {
   try {
@@ -13,9 +16,27 @@ onMounted(async () => {
   } catch (error) {
     console.error('歌曲加载失败:', error)
   }
+  try {
+    const userId = userStore.user.userInfo.id;
+    const res = await getRecommendPlaylists(userId);
+    if (res.code === 100200) {
+      playlists.value = res.data.slice(0, 5); // 最多取5个
+    }
+  } catch (error) {
+    console.error('歌单加载失败:', error)
+  }
 })
 
+import { useRouter } from 'vue-router';
+const router = useRouter();
 
+// 添加点击处理函数
+const handleCardClick = (playlistId: number) => {
+  router.push({
+    name: 'Playlist',
+    params: { id: playlistId }
+  });
+};
 
 const playSong = async (id: number) => {
   const res = await getSongOfId(id)
@@ -33,18 +54,22 @@ const playSong = async (id: number) => {
         type="card"
     >
       <el-carousel-item
-          v-for="item in 6"
-          :key="item"
+          v-for="playlist in playlists"
+          :key="playlist.id"
           class="[&>.el-carousel__mask]:!bg-transparent
-               transition-all duration-300 hover:scale-105
-               shadow-lg hover:shadow-xl rounded-xl overflow-hidden"
+         transition-all duration-300 hover:scale-105
+         shadow-lg hover:shadow-xl rounded-xl overflow-hidden"
+          @click="handleCardClick(playlist.id)"
       >
-        <div class="h-full flex items-center justify-center
-                 bg-gradient-to-br from-pink-200/80 via-purple-200/80 to-blue-200/80
-                 backdrop-blur-sm">
-          <h3 class="text-6xl font-bold text-white drop-shadow-md">
-            {{ item }}
-          </h3>
+        <div class="h-full flex items-center justify-center relative">
+          <img
+              :src="playlist.pic"
+              class="w-full h-full object-cover absolute inset-0 z-0"
+              alt="歌单封面"
+          >
+          <div class="z-10 bg-black/30 p-4 rounded-lg backdrop-blur-sm">
+            <h3 class="text-2xl font-bold text-white">{{ playlist.title }}</h3>
+          </div>
         </div>
       </el-carousel-item>
     </el-carousel>
@@ -105,5 +130,16 @@ const playSong = async (id: number) => {
   transform: scale(1.08);
   z-index: 2;
 }
+/* 调整轮播图高度 */
+.el-carousel {
+  height: 300px !important;
+}
 
+/* 图片悬浮效果 */
+.el-carousel-item img {
+  transition: transform 0.3s ease;
+}
+.el-carousel-item:hover img {
+  transform: scale(1.05);
+}
 </style>

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import {useUserStore} from '@/stores/modules/useUserStore'
-import {Menu as IconMenu, Upload, User} from "@element-plus/icons-vue";
+import {ChatDotRound, Menu as IconMenu, Upload, User} from "@element-plus/icons-vue";
 import router from "@/router";
 import {getCollectSongList} from "@/api/api.ts";
 interface CollectPlaylist {
@@ -95,6 +95,13 @@ onMounted(async () => {
               </el-menu-item>
             </el-sub-menu>
           </el-sub-menu>
+<!--          ai对话-->
+          <el-menu-item index="/aiDialogue">
+            <template #title>
+              <el-icon><ChatDotRound /></el-icon>
+              <span class="ms-2">AI对话</span>
+            </template>
+          </el-menu-item>
         </el-menu>
       </el-scrollbar>
     </div>

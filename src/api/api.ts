@@ -95,10 +95,16 @@ export function getPlaylistSongs(id: number) {
     return get(`/songList/${id}/songs`, { id })
 }
 //取消收藏
-export function deleteCollect(id: number){
-    return deleteRequest(`/collect/cancel/${id}`,{})
+export function deleteCollect(songId:number,userId:number){
+    return deleteRequest(`/collect/cancel/${songId}`,{
+        userId
+    })
 }
 //用户信息修改
 export function updateUserInfo(data: any) {
     return put(`/consumer/update`, data)
+}
+//ai对话
+export function ai(data: { context: string }) {
+    return post(`/ai/chat`, data)
 }
